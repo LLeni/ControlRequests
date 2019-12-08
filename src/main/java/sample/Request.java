@@ -1,5 +1,6 @@
 package sample;
 
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 
 import java.util.Calendar;
@@ -15,9 +16,30 @@ public class Request {
     private GregorianCalendar dateDeadLine;
     private GregorianCalendar dateEnd;
     private String description;
-    private ComboBox condition;
+    private CheckBox condition;
 
-    public Request(String initiator, String department, String address, int influence, String dateBegin, String dateDeadLine, String dateEnd, String description, String condition) {
+    public int getCondition() {
+        if(condition.isSelected()){
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    public void setCondition(int condition) {
+        CheckBox checkBox = new CheckBox();
+        switch(condition){
+            case 0:
+                checkBox.setSelected(false);
+                break;
+            case 1:
+                checkBox.setSelected(true);
+                break;
+        }
+        this.condition = checkBox;
+    }
+
+    public Request(String initiator, String department, String address, int influence, String dateBegin, String dateDeadLine, String dateEnd, String description, int condition) {
         this.initiator = initiator;
         this.department = department;
         this.address = address;

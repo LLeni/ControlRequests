@@ -4,9 +4,7 @@ import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import sample.Request;
 
 import java.sql.*;
@@ -19,6 +17,10 @@ public class Controller {
     TextArea areaDescription;
     @FXML
     Button buttonCleaner, buttonSave;
+    @FXML
+    TableView tableView;
+    @FXML
+    TableColumn columnInitiator, columnDepartment, columnAddress, columnInfluence, columnDateBegin, columnDateDeadLine, columnDateEnd, columnDescription, columnCondition;
 
     private ObservableList<Request> requestsData;
     private  Connection conn;
@@ -55,7 +57,7 @@ public class Controller {
                 while (resultSet.next()) {
                     requestsData.add(new Request(resultSet.getString(0), resultSet.getString(1), resultSet.getString(2),
                             resultSet.getInt(3), resultSet.getString(4), resultSet.getString(5), resultSet.getString(6),
-                            resultSet.getString(7), resultSet.getString(8)));
+                            resultSet.getString(7), resultSet.getInt(8)));
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -74,7 +76,7 @@ public class Controller {
             statement.setString(6, request.getDateDeadLine());
             statement.setString(7, request.getDateEnd());
             statement.setString(8, request.getDescription());
-            statement.setString(9, request.getCondition());
+            statement.setInt(9, request.getCondition());
 
 
         } catch (SQLException e) {
@@ -87,7 +89,7 @@ public class Controller {
         try {
             statement = conn.prepareStatement("UPDATE requests SET dateEnd = ?, condition = ?");
             statement.setString(1, request.getDateEnd());
-            statement.setString(2,request.getCondition());
+            statement.setInt(2,request.getCondition());
         } catch (SQLException e) {
             e.printStackTrace();
         }
