@@ -23,7 +23,7 @@ public class Main extends Application {
         scene.getStylesheets().add("/style.css");
         primaryStage.setScene(scene);
         primaryStage.setWidth(1400);
-        primaryStage.setHeight(600);
+        primaryStage.setHeight(700);
         primaryStage.setTitle("Введение заявок");
         primaryStage.show();
     }

@@ -6,17 +6,20 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import sample.Date;
 import sample.Influence;
+import sample.Month;
 import sample.Request;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.StringTokenizer;
+import java.util.*;
 
 
 public class Controller {
@@ -32,7 +35,20 @@ public class Controller {
     TableView tableView;
     @FXML
     TableColumn columnInitiator, columnDepartment, columnAddress, columnInfluence, columnDateBegin, columnDateDeadLine, columnDateEnd, columnDescription, columnCondition;
+    @FXML
+    BarChart<String, Number> barChart;
+    @FXML
+    CategoryAxis xAxis;
+    @FXML
+    NumberAxis yAxis;
+    @FXML
+    ComboBox<String> yearComboBox;
+    @FXML
+    ComboBox<Month> monthComboBox;
 
+
+    private XYChart.Series<String, Number> inputRequestsChart;
+    private XYChart.Series<String, Number> doneRequestsChart;
     private ObservableList<Request> requestsData;
     private  Connection conn;
     private boolean hasDate;
@@ -44,14 +60,16 @@ public class Controller {
         getConnection();
         getData();
 
-
+        for (int i = 0; i < requestsData.size(); i++) {
+            addActionListener(requestsData.get(i));
+        }
 
         comboBoxInfluence.setItems(Influence.getListInfluences());
         comboBoxInfluence.getSelectionModel().select(0);
 
         columnInitiator.setCellValueFactory(new PropertyValueFactory<Request, String>("initiator"));
         columnDepartment.setCellValueFactory(new PropertyValueFactory<Request, String>("department"));
-        columnDepartment.setCellValueFactory(new PropertyValueFactory<Request, String>("address"));
+        columnAddress.setCellValueFactory(new PropertyValueFactory<Request, String>("address"));
         columnInfluence.setCellValueFactory(new PropertyValueFactory<Request, Influence>("influence"));
         columnDateBegin.setCellValueFactory(new PropertyValueFactory<Request, GregorianCalendar>("dateBegin"));
         columnDateDeadLine.setCellValueFactory(new PropertyValueFactory<Request, GregorianCalendar>("dateDeadLine"));
@@ -60,10 +78,32 @@ public class Controller {
         columnCondition.setCellValueFactory(new PropertyValueFactory<Request, CheckBox>("condition"));
 
         tableView.setItems(requestsData);
-
-        for (int i = 0; i < requestsData.size(); i++) {
-            addActionListener(requestsData.get(i));
+        ObservableList<String> years = FXCollections.observableArrayList();
+        int startYear = 2018;
+        for (int i = 0; i < 15; i++) {
+            years.add(String.valueOf(startYear + i));
         }
+
+        yearComboBox.setItems(years);
+        monthComboBox.setItems(Month.getListMonths());
+
+        inputRequestsChart = new XYChart.Series<String, Number>();
+        inputRequestsChart.setName("Поступившие заявки");
+        doneRequestsChart = new XYChart.Series<String, Number>();
+        doneRequestsChart.setName("Выполненные заявки");
+
+        xAxis.setLabel("День");
+        yAxis.setLabel("Количество заявок");
+        yAxis.setTickUnit(1);
+        yAxis.setLowerBound(0);
+        yAxis.setUpperBound(25);
+        yAxis.setAutoRanging(false);
+
+        barChart.getData().add(inputRequestsChart);
+        barChart.getData().add(doneRequestsChart);
+        barChart.setBarGap(1);
+        barChart.setCategoryGap(5);
+
     }
 
     public void clean(){
@@ -103,7 +143,6 @@ public class Controller {
     }
 
     public void insertData(){
-        System.out.println("\n\n");
         if(fieldInitiator.getText().equals("") || fieldDepartment.getText().equals("")
         || fieldAddress.getText().equals("") || areaDescription.getText().equals("")){
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -112,7 +151,6 @@ public class Controller {
             alert.show();
         } else {
             String currentDate  = Date.getCurrentDate();
-            System.out.println("in insertData currentDate is" + currentDate);
             Request request = new Request(fieldInitiator.getText(), fieldDepartment.getText(), fieldAddress.getText(),
                     comboBoxInfluence.getValue().name(), currentDate, setDeadLine(currentDate, comboBoxInfluence.getValue().name()),
                     null, areaDescription.getText(), 0);
@@ -135,6 +173,7 @@ public class Controller {
             }
             addActionListener(request);
             requestsData.add(request);
+            clean();
         }
     }
 
@@ -182,5 +221,52 @@ public class Controller {
                }
                checkBox.setSelected(true);
             });
+    }
+
+    public void buildChart(){
+        System.out.println("asdasd");
+        HashMap<String, Integer> inputRequests = new HashMap<>();
+        HashMap<String, Integer> doneRequests = new HashMap<>();
+
+        for (int i = 1; i <= 31; i++) {
+            String d = String.format("%02d", i);
+            System.out.println("d " + d);
+            inputRequests.put(d, 0);
+            doneRequests.put(d, 0);
         }
+
+        String dateBegin;
+        String year;
+        String month;
+        String day;
+        for (Request r:
+             requestsData) {
+            dateBegin = r.getDateBegin();
+            year = Date.getYear(dateBegin);
+            month = Date.getMonth(dateBegin);
+            System.out.println("month c " + monthComboBox.getValue().getNumber());
+            if(year.equals(yearComboBox.getValue()) &&
+                    month.equals(monthComboBox.getValue().getNumber())){
+                day = Date.getDay(dateBegin);
+                inputRequests.put(day, inputRequests.get(day) + 1);
+                if(r.getCondition().isSelected()){
+                    doneRequests.put(day, doneRequests.get(day) + 1);
+                }
+            }
+        }
+
+        for (String d: // день
+             inputRequests.keySet()) {
+            inputRequestsChart.getData().add(new XYChart.Data<>(d, inputRequests.get(d)));
+            doneRequestsChart.getData().add(new XYChart.Data<>(d, doneRequests.get(d)));
+        }
+
+
+        Collections.sort(inputRequestsChart.getData(), (Comparator<XYChart.Data>) (o1, o2) -> {
+            String xValue1 = (String) o1.getXValue();
+            String xValue2 = (String) o2.getXValue();
+            return xValue1.compareTo(xValue2);
+        });
+    }
+
 }
