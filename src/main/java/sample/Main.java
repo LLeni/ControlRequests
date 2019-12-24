@@ -20,10 +20,11 @@ public class Main extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("/views/main.fxml"));
 
         Scene scene = new Scene(root);
+        scene.getStylesheets().add("/style.css");
         primaryStage.setScene(scene);
-        primaryStage.setWidth(800);
+        primaryStage.setWidth(1400);
         primaryStage.setHeight(600);
-        primaryStage.setTitle("Необходимое название");
+        primaryStage.setTitle("Введение заявок");
         primaryStage.show();
     }
 }

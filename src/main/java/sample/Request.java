@@ -1,5 +1,7 @@
 package sample;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 
@@ -18,56 +20,16 @@ public class Request {
     private String description;
     private CheckBox condition;
 
-    public int getCondition() {
-        if(condition.isSelected()){
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-
-    public void setCondition(int condition) {
-        CheckBox checkBox = new CheckBox();
-        switch(condition){
-            case 0:
-                checkBox.setSelected(false);
-                break;
-            case 1:
-                checkBox.setSelected(true);
-                break;
-        }
-        this.condition = checkBox;
-    }
-
-    public Request(String initiator, String department, String address, int influence, String dateBegin, String dateDeadLine, String dateEnd, String description, int condition) {
+    public Request(String initiator, String department, String address, String influence, String dateBegin, String dateDeadLine, String dateEnd, String description, int condition) {
         this.initiator = initiator;
         this.department = department;
         this.address = address;
-        setInfluence(influence);
-        this.dateBegin = getGregorianCalendar(dateBegin);
-        this.dateDeadLine = getGregorianCalendar(dateDeadLine);
-        this.dateEnd = getGregorianCalendar(dateEnd);
+        this.influence = Influence.defineInfluence(influence);
+        this.dateBegin = Date.getGregorianCalendar(dateBegin);
+        this.dateDeadLine = Date.getGregorianCalendar(dateDeadLine);
+        this.dateEnd = Date.getGregorianCalendar(dateEnd);
         this.description = description;
         setCondition(condition);
-    }
-
-    private GregorianCalendar getGregorianCalendar(String date){
-        if(date.equals("")){
-            return null;
-        } else {
-            StringTokenizer tokenizer = new StringTokenizer(date, " ");
-            GregorianCalendar calendar = new GregorianCalendar(Integer.valueOf(tokenizer.nextToken()), Integer.valueOf(tokenizer.nextToken()),
-                    Integer.valueOf(tokenizer.nextToken()));
-            calendar.set(Calendar.HOUR, Integer.valueOf(tokenizer.nextToken()));
-            calendar.set(Calendar.MINUTE, Integer.valueOf(tokenizer.nextToken()));
-            return calendar;
-        }
-    }
-    
-    private String getString(GregorianCalendar calendar){
-        return calendar.get(Calendar.DAY_OF_MONTH) + "." + calendar.get(Calendar.MONTH) + "." +
-                calendar.get(Calendar.YEAR) + " " + calendar.get(Calendar.HOUR) + ":" +
-                calendar.get(Calendar.MINUTE);
     }
 
     public String getInitiator() {
@@ -96,47 +58,35 @@ public class Request {
     }
 
     public String getDateBegin() {
-        return getString(dateBegin);
+        return Date.format(dateBegin);
     }
 
     public void setDateBegin(String dateBegin) {
-        this.dateBegin = getGregorianCalendar(dateBegin);
+        this.dateBegin = Date.getGregorianCalendar(dateBegin);
     }
 
     public String getDateDeadLine() {
-        return getString(dateDeadLine);
+        return Date.format(dateDeadLine);
     }
 
     public void setDateDeadLine(String dateDeadLine) {
-        this.dateDeadLine = getGregorianCalendar(dateDeadLine);
+        this.dateDeadLine = Date.getGregorianCalendar(dateDeadLine);
     }
 
     public String getDateEnd() {
-        return getString(dateEnd);
+        if(dateEnd == null){
+            return null;
+        } else {
+            return Date.format(dateEnd);
+        }
     }
 
     public void setDateEnd(String dateEnd) {
-        this.dateEnd = getGregorianCalendar(dateEnd);
+        this.dateEnd = Date.getGregorianCalendar(dateEnd);
     }
 
-
-
-    public int getInfluence() {
-        return influence.getHours();
-    }
-
-    public void setInfluence(int influence) {
-        switch (influence){
-            case 1:
-                this.influence = Influence.ONE;
-                break;
-            case 2:
-                this.influence = Influence.TWO;
-                break;
-            case 3:
-                this.influence = Influence.THREE;
-                break;
-        }
+    public String getInfluence() {
+        return influence.name();
     }
 
     public String getDescription() {
@@ -146,4 +96,31 @@ public class Request {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public CheckBox getCondition() {
+        return condition;
+    }
+
+    public int getValueCondition(){
+        if(condition.isSelected()){
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    private void setCondition(int condition) {
+        CheckBox checkBox = new CheckBox();
+        switch(condition){
+            case 0:
+                checkBox.setSelected(false);
+                break;
+            case 1:
+                checkBox.setSelected(true);
+                break;
+        }
+        this.condition = checkBox;
+    }
+
+
 }
